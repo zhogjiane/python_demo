@@ -150,6 +150,14 @@ def open_mysql_connect():
 
 
 
+
+# 增加一个post接口 /api/v1/contacts 接受参数
+app.route("/api/v1/contacts", methods=["POST"])
+def add_contact():
+    contact = request.json
+    contact_id = model.add_contact(contact)
+    return jsonify({'contact_id': contact_id})
+
 if __name__ == '__main__':
     app.run(debug=True)
     
