@@ -1,51 +1,41 @@
 # 引入flask框架
 from flask import Flask,jsonify,request
 import json
+from flask.wrappers import Response
+# 引入myql驱动
+import pymysql
+# 引入pandas
+import pandas as pd
 
 app = Flask(__name__)
 
 
-# 定义一个接口
-@app.route('/run',methods=['GET','POST'])
-def run():
+#  定义一个接口操作数据库
+@app.route('/run3',methods=['GET','POST'])
+def run3():
     if request.method == 'POST':
         # 获取前端传递的参数 使用json.loads()方法将json字符串转换为python对象 
-        global keywords_fangfa
-        global yuliaoku
-        global key_number
-        global usde_hmpgid
-        data = json.loads(request.get_data(as_text=True).encode('utf-8'))
-        keywords_fangfa = data['keywords_fangfa']
-        yuliaoku = data['yuliaoku']
-        key_number = data['key_number']
-        usde_hmpgid = data['usde_hmpgid']
-        # 调用方法
-    try:
-        state_begin()
-        Score().show_res()
-        # stata_end('已完成')
-        result = {'state': 'success'}
-        return Response(json.dumps(result), mimetype='application/json')
-    except Exception as e:
-        result = {'state': 'fail', 'msg': str(e)}
-        return Response(json.dumps(result), mimetype='application/json')
-
-# 定义一个接口
-@app.route('/run2',methods=['GET','POST'])
-def run2():
-    if request.method == 'POST':
-        # 传入一个数组，接受并进行排序
-        data = request.get_json()['data']
-        # 定义一个空列表
-        result = []
-        # 循环遍历数组
-        for i in data:
-            # 将数据添加到空列表中
-            result.append(i)
-        # 对列表进行排序
-        result.sort()
+        # data = json.loads(request.get_data())
+        # 获取数据库连接
+        engine = pymysql.connect(host='localhost',user='root',password='123456',database='pythondatabase',port=3309,charset='utf8')
+        # 获取游标
+        cursor = engine.cursor()        
+        # 获取'C2'那一列的值的sql语句
+        sql2c2 = "select C2 from tek_data1"
+        # cursor执行语句
+        cursor.execute(sql2c2)
+        # 返回json结果，并只显示了value的值。
+        # result=pd.read_sql_query(sql2c2,engine)['C2'].to_json(orient='values')
+        # 返回list形式的数据
+        result = pd.read_sql_query(sql2c2,engine)['C2'].to_list()
+        # 关闭游标
+        cursor.close()
+        # 关闭数据库连接
+        engine.close()
         # 返回结果
-        return jsonify({'result':result})
+        return Response(json.dumps(result),mimetype='application/json')
+
+
 
 
 
