@@ -16,11 +16,16 @@
   // 扩缩容指标类型
   "policyType": "cpu",
   // 扩缩容指标阈值
-  "policyThreshold": 60,
+  "policyThreshold": 100,
   // 环境变量
   "envParams": {},
   // 日志采集路径
   "customLogs": "stdout",
   // 启动检测延迟
-  "initialDelaySeconds": 2
+  "initialDelaySeconds": 2,
+  "dataBaseName":"tenflask",
+	"executeSQLs":[
+		"CREATE DATABASE IF NOT EXISTS tenflask;",
+		"USE tenflask;"
+	]    
 }
