@@ -1,22 +1,35 @@
-# 配置信息
-@staticmethod
-class Config:
-    # 基本配置
-    SQLALCHEMY_COMMIT_ON_TEARDOWN = True
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+import nacos
+import configparser
+import io
+import logging
+# 引入线程模块 模拟nacos心跳监测
+from threading import Timer
 
-    # 图片上传配置
-    UPLOAD_FOLDER = 'app/static/uploads'
-    ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
+SERVER_ADDRESSES = "10.0.59.135:30848"
+NAMESPACE = "slide-dev"
+client = nacos.NacosClient(SERVER_ADDRESSES, namespace=NAMESPACE)
+nacos_conf = client.get_config("fuwuming", "DEFAULT_GROUP", True,
+                               True)
+conf = configparser.ConfigParser()
+conf.readfp(io.StringIO(nacos_conf))
+clientInstance = nacos.NacosClient(SERVER_ADDRESSES, namespace=NAMESPACE, username="username", password="password")
+clientInstance.add_naming_instance("fuwuming", conf.get("app", "host"),
+                                   conf.get("flask", "port"), "DEFAULT")
 
-   # minio 配置
-    MINIO_ACCESS_KEY = 'minioaccesskey'
-    MINIO_SECRET_KEY = 'miniosecretkey'
-    MINIO_ENDPOINT = 'http://localhost:9000'
-    MINIO_BUCKET_NAME = 'minio-bucket'
-    MINIO_BUCKET_DOMAIN = 'http://localhost:9000'
-    MINIO_BUCKET_REGION = 'us-east-1'
-    MINIO_BUCKET_ACL = 'public-read'
-    MINIO_BUCKET_CANNED_ACL = 'public-read'
-    MINIO_BUCKET_ENCRYPTION = 'AES256'
-    MINIO_BUCKET_ENCRYPTION_KEY = 'minioencryptionkey'
+def heartbeatCheck():
+    try:
+        clientInstance.send_heartbeat("fuwuming", conf.get("app", "host"),
+                                    conf.get("flask", "port"), "DEFAULT")
+    except Exception as e:
+        logging.error('Reason:', e)
+
+
+class RepeatingTimer(Timer):
+    def run(self):
+        while not self.finished.is_set():
+            self.function(*self.args, **self.kwargs)
+            self.finished.wait(self.interval)
+
+
+t = RepeatingTimer(3.0, heartbeatCheck)
+t.start()            
