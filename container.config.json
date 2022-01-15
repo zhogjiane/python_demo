@@ -16,7 +16,7 @@
   // 扩缩容指标类型
   "policyType": "cpu",
   // 扩缩容指标阈值
-  "policyThreshold": 100,
+  "policyThreshold": 95,
   // 环境变量
   "envParams": {},
   // 日志采集路径
