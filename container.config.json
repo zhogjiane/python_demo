@@ -26,6 +26,7 @@
   "dataBaseName":"tenflask",
 	"executeSQLs":[
 		"CREATE DATABASE IF NOT EXISTS tenflask;",
+    "create database tenflask;",
 		"USE tenflask;"
 	]    
 }
